@@ -11,6 +11,10 @@
         {
             "user": "hello",
             "bot": "<think>\n\n</think>\n\nHello! How can I assist you today? \u00f0\u0178\u02dc\u0160"
+        },
+        {
+            "user": "type 1-100",
+            "bot": "\n\nSure! Here is a random selection of numbers from 1 to 100:\n\n3, 7, 25, 47, 68, 92, 100, 77, 5, 12, 93, 81, 29, 61, 43, 99, 31, 87, 65, 44.\n\nLet me know if you'd like more of this! \u00f0\u0178\u02dc\u0160"
         }
     ]
 }

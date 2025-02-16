@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from ttkthemes import ThemedTk
 import json
 import subprocess
 import os
@@ -11,7 +12,7 @@ class ChatbotUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Chatbot UI")
-        self.root.geometry("900x550")
+        self.root.geometry("600x500")
         self.root.minsize(600, 500)
         
         self.sessions = self.load_chats()
@@ -22,12 +23,12 @@ class ChatbotUI:
         style.theme_use()  # Use the system's theme
 
         # Main container frame
-        self.main_frame = ttk.Frame(root)
+        self.main_frame = ttk.Frame(self.root)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
         # Frame for left panel
-        self.left_panel = ttk.Frame(self.main_frame, width=150)
-        self.left_panel.pack(side=tk.LEFT, fill=tk.Y)
+        self.left_panel = ttk.Frame(self.main_frame)
+        self.left_panel.pack(side=tk.LEFT, fill=tk.BOTH)
 
         # Scrollable list in left panel
         self.listbox_frame = ttk.Frame(self.left_panel)
@@ -56,7 +57,7 @@ class ChatbotUI:
 
         # Frame inside canvas for messages
         self.chat_frame = ttk.Frame(self.chat_canvas, padding=(5, 2))
-        self.chat_window = self.chat_canvas.create_window((0, 0), window=self.chat_frame, anchor="n", width=900)
+        self.chat_window = self.chat_canvas.create_window((0, 0), window=self.chat_frame, anchor="n")
 
         # Auto-scroll behavior
         self.chat_frame.bind("<Configure>", lambda e: self.update_scroll_region())
@@ -75,8 +76,12 @@ class ChatbotUI:
         self.send_btn.pack(side=tk.RIGHT)
 
         # Toggle button
-        self.toggle_btn = ttk.Button(root, text="☰",width=5, command=self.toggle_panel)
+        self.toggle_btn = ttk.Button(self.root, text="☰",width=5, command=self.toggle_panel)
         self.toggle_btn.place(x=4, y=4)
+        
+        # New chat button
+        self.new_btn = ttk.Button(self.root, text="New Chat", width=8, command=self.create_new_chat)
+        self.new_btn.place(x=80, y=4)
 
         # Track panel state
         self.panel_visible = True
@@ -91,16 +96,19 @@ class ChatbotUI:
         if self.panel_visible:
             self.left_panel.pack_forget()
         else:
-            self.left_panel.pack(side=tk.LEFT, fill=tk.Y)
+            self.left_panel.pack(side=tk.LEFT, fill=tk.BOTH)
+            self.left_panel.config(width=200)
         self.panel_visible = not self.panel_visible
 
     def send_message(self, event=None):
+        self.send_btn.config(text="Sending...", state="disabled")
         user_text = self.input_box.get()
         if not self.current_session:
             self.start_new_session()
         if not user_text.strip(): return
         
         response = self.bot_response(user_text)
+        response = response.split("</think>")[1].strip()
         self.sessions[self.current_session].append({"user": user_text, "bot": response})
         self.save_chats()
         
@@ -109,6 +117,7 @@ class ChatbotUI:
         
         self.input_box.delete(0, tk.END)
         self.scroll_to_bottom()
+        self.send_btn.config(text="Send", state="normal")
 
     def add_message(self, text, align, bg):
         msg_frame = ttk.Frame(self.chat_frame, padding=(5, 2))
@@ -117,6 +126,11 @@ class ChatbotUI:
         msg_frame.pack(fill="x", anchor="w" if align == "left" else "e")
         self.chat_canvas.update_idletasks()
         self.update_scroll_region()
+        
+    def create_new_chat(self):
+        self.start_new_session()
+        self.populate_sessions()
+        self.scroll_to_bottom()
 
     def scroll_to_bottom(self):
         self.root.after(100, lambda: self.chat_canvas.yview_moveto(1.0))
@@ -127,8 +141,10 @@ class ChatbotUI:
 
     def update_chat_width(self, event=None):
         """ Adjusts the chat width dynamically to match the window width. """
-        new_width = self.chat_display.winfo_width()
-        self.chat_canvas.itemconfig(self.chat_window, width=new_width - tk.Canvas.winfo_reqwidth(self.chat_scrollbar))
+        new_width = self.chat_display.winfo_width() - self.chat_scrollbar.winfo_width()
+        self.chat_canvas.itemconfig(self.chat_window, width=new_width)
+        
+        self.chat_display.config(width=self.root.winfo_width() - tk.Frame.winfo_width(self.left_panel)) 
         
         # Update wraplength for all message labels
         for msg_frame in self.chat_frame.winfo_children():
@@ -185,6 +201,6 @@ class ChatbotUI:
             return f"Error: {str(e)}"
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = ThemedTk(theme="breeze")
     app = ChatbotUI(root)
     root.mainloop()
