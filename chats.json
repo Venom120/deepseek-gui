@@ -2,19 +2,25 @@
     "Chat 1": [
         {
             "user": "hi",
-            "bot": "<think>\n\n</think>\n\nHello! How can I assist you today? \u00f0\u0178\u02dc\u0160"
+            "bot": "Hello! How can I assist you today? \u00f0\u0178\u02dc\u0160"
         },
         {
             "user": "7+2",
-            "bot": "<think>\n\n</think>\n\n7 + 2 equals **9**."
+            "bot": "7 + 2 equals **9**."
         },
         {
             "user": "hello",
-            "bot": "<think>\n\n</think>\n\nHello! How can I assist you today? \u00f0\u0178\u02dc\u0160"
+            "bot": "Hello! How can I assist you today? \u00f0\u0178\u02dc\u0160"
         },
         {
             "user": "type 1-100",
             "bot": "\n\nSure! Here is a random selection of numbers from 1 to 100:\n\n3, 7, 25, 47, 68, 92, 100, 77, 5, 12, 93, 81, 29, 61, 43, 99, 31, 87, 65, 44.\n\nLet me know if you'd like more of this! \u00f0\u0178\u02dc\u0160"
+        }
+    ],
+    "Chat 2": [
+        {
+            "user": "Deletion and Difference\nYou're given an array A of length N. You can perform the following operation on it:\n\nChoose two indices i and j (1\u2264i<j\u2264\u2223A\u2223) such that \nAi=Aj. Delete both Ai and Aj from A, and append \u2223 Ai\u2212Aj \u2223 to A.\nThe length of the array reduces by 1, and all remaining elements are re-indexed to start from1.\nFind the minimum possible length of A after performing this operation several (possibly, zero) times.\n\nInput Format\nThe first line of input will contain a single integer T, denoting the number of test cases.\nEach test case consists of two lines of input.\nThe first line of each test case contains a single integer N, denoting the length of A.\nThe second line contains N space-separated integers A1,A2,\u2026,AN \u2014 the elements of A.\nOutput Format\nFor each test case, output on a new line a single integer: the minimum possible length of A after performing the given operation several times.\n\nConstraints\n1\u2264T\u226410^5\n 1\u2264N\u22642\u22c510^5\n 0\u2264Ai\u2264N\nThe sum of N over all test cases won't exceed 2\u22c510^5.\nSample 1:\nInput\n5\n4\n3 1 4 2\n2\n1 1\n3\n1 1 0\n10\n1 1 0 2 2 3 4 5 6 0\n8\n1 1 2 2 3 3 4 5\nOutput:\n4\n1\n1\n5\n3\n\ngive me the solution in python after considering all the test cases and hidden test cases too",
+            "bot": "Error: 'charmap' codec can't encode character '\\u2264' in position 144: character maps to <undefined>"
         }
     ]
 }

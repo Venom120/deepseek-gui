@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from ttkthemes import ThemedTk
-import json
-import subprocess
-import os
+import json, subprocess, os, sys
+
+sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8') # Set stdout encoding to UTF-8
 
 JSON_FILE = "chats.json"
 OLLAMA_MODEL = "deepseek-r1:1.5b"
@@ -12,8 +12,8 @@ class ChatbotUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Chatbot UI")
-        self.root.geometry("600x500")
-        self.root.minsize(600, 500)
+        self.root.geometry("1200x750")
+        self.root.minsize(1200, 700)
         
         self.sessions = self.load_chats()
         self.current_session = None
@@ -42,8 +42,6 @@ class ChatbotUI:
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.listbox.config(yscrollcommand=self.scrollbar.set)
         
-        
-
         # Chat display container
         self.chat_display = ttk.Frame(self.main_frame)
         self.chat_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -66,17 +64,18 @@ class ChatbotUI:
         self.input_frame = ttk.Frame(self.chat_display)
         self.input_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=50, pady=5)
 
-        # Text input box
-        self.input_box = ttk.Entry(self.input_frame)
-        self.input_box.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        # Text input box (multiline)
+        self.input_box = tk.Text(self.input_frame, height=3)
+        self.input_box.pack(side=tk.LEFT, fill=tk.X, padx=5)
+        self.input_box.bind("<Shift-Return>", self.insert_newline)
         self.input_box.bind("<Return>", self.send_message)
 
         # Send button
         self.send_btn = ttk.Button(self.input_frame, text="Send", command=self.send_message)
-        self.send_btn.pack(side=tk.RIGHT)
+        self.send_btn.pack(side=tk.RIGHT, expand=False)
 
         # Toggle button
-        self.toggle_btn = ttk.Button(self.root, text="☰",width=5, command=self.toggle_panel)
+        self.toggle_btn = ttk.Button(self.root, text="☰", width=5, command=self.toggle_panel)
         self.toggle_btn.place(x=4, y=4)
         
         # New chat button
@@ -100,24 +99,29 @@ class ChatbotUI:
             self.left_panel.config(width=200)
         self.panel_visible = not self.panel_visible
 
+    def insert_newline(self, event):
+        self.input_box.insert(tk.INSERT, "\n")
+        return "break"
+
     def send_message(self, event=None):
-        self.send_btn.config(text="Sending...", state="disabled")
-        user_text = self.input_box.get()
+        if event:
+            event.widget.master.focus_set()  # Remove focus from the Text widget to prevent newline insertion
+        user_text = self.input_box.get("1.0", tk.END).strip()
         if not self.current_session:
             self.start_new_session()
-        if not user_text.strip(): return
+        if not user_text: return
         
         response = self.bot_response(user_text)
-        response = response.split("</think>")[1].strip()
+        if "<think>" in response:
+            response = response.split("</think>")[1].strip()
         self.sessions[self.current_session].append({"user": user_text, "bot": response})
         self.save_chats()
         
         self.add_message(user_text, align="right", bg="lightblue")  # User messages on the right
         self.add_message(response, align="left", bg="lightgray")  # Bot messages on the left
         
-        self.input_box.delete(0, tk.END)
+        self.input_box.delete("1.0", tk.END)
         self.scroll_to_bottom()
-        self.send_btn.config(text="Send", state="normal")
 
     def add_message(self, text, align, bg):
         msg_frame = ttk.Frame(self.chat_frame, padding=(5, 2))
@@ -152,7 +156,6 @@ class ChatbotUI:
                 if isinstance(widget, tk.Label):
                     widget.config(wraplength=new_width - 40)  # Adjust wraplength based on new width
     
-                 
     def check_ollama(self):
         try:
             subprocess.run(["ollama", "list"], check=True, capture_output=True)
@@ -195,7 +198,11 @@ class ChatbotUI:
     
     def bot_response(self, message):
         try:
-            result = subprocess.run(["ollama", "run", OLLAMA_MODEL], input=message, text=True, capture_output=True)
+            result = subprocess.run(["ollama", "run", OLLAMA_MODEL], input=f'"""{message}"""', text=True, capture_output=True)
+            return result.stdout.strip()
+        except Exception as e:
+            return f"Error: {str(e)}"
+
             return result.stdout.strip()
         except Exception as e:
             return f"Error: {str(e)}"
